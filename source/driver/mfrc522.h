@@ -39,6 +39,6 @@ void mfrc522Init(void);
  * @param [uint8_t]: *pID
  * @retval MI_OK if card is detected
  */
-MFRC522Status mfrc522Check(uint8_t *pId);
+MFRC522Status mfrc522Check(uint8_t *pbyId);
 /******************************************************************************/
 #endif /* DRIVER_MFRC522_H_ */

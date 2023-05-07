@@ -20,7 +20,7 @@
 /* Mifare_One card command word */
 #define PICC_REQIDL                     0x26   // find the antenna area does not enter hibernation
 #define PICC_REQALL                     0x52   // find all the cards antenna area
-#define PICC_ANTICOL                    0x93   // anti-collision
+#define PICC_ANTICOLL                    0x93   // anti-collision
 #define PICC_SElECTTAG                  0x93   // election card
 #define PICC_AUTHENT1A                  0x60   // authentication key A
 #define PICC_AUTHENT1B                  0x61   // authentication key B
@@ -43,7 +43,7 @@
 #define MFRC522_REG_ERROR               0x06
 #define MFRC522_REG_STATUS1             0x07
 #define MFRC522_REG_STATUS2             0x08
-#define MFRC522_REG_FIFO_DATAq          0x09
+#define MFRC522_REG_FIFO_DATA           0x09
 #define MFRC522_REG_FIFO_LEVEL          0x0A
 #define MFRC522_REG_WATER_LEVEL         0x0B
 #define MFRC522_REG_CONTROL             0x0C
@@ -121,21 +121,21 @@
 /******************************************************************************/
 /*                            PRIVATE FUNCTIONS                               */
 /******************************************************************************/
-static void mfrc522WriteRegister(uint8_t addr, uint8_t val);
-static uint8_t mfrc522ReadRegister(uint8_t addr);
-static void mfrc522SetBitMask(uint8_t reg, uint8_t mask);
-static void mfrc522ClearBitMask(uint8_t reg, uint8_t mask);
+static void mfrc522WriteRegister(uint8_t byAddr, uint8_t byVal);
+static uint8_t mfrc522ReadRegister(uint8_t byAddr);
+static void mfrc522SetBitMask(uint8_t byReg, uint8_t byMask);
+static void mfrc522ClearBitMask(uint8_t byReg, uint8_t byMask);
 static void mfrc522AntennaOn(void);
 static void mfrc522AntennaOff(void);
 static void mfrc522Reset(void);
-static MFRC522Status mfrc522Request(uint8_t reqMode, uint8_t* pTagType);
-static MFRC522Status mfrc522ToCard(uint8_t command, uint8_t* pSendData, uint8_t sendLen, uint8_t* pBackData, uint16_t* pBackLen);
-static MFRC522Status mfrc522Anticoll(uint8_t* pSerNum);
-static void mfrc522CalculateCRC(uint8_t* pIndata, uint8_t len, uint8_t* pOutData);
-static uint8_t mfrc522SelectTag(uint8_t* pSerNum);
-static MFRC522Status mfrc522Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* pSectorkey, uint8_t* pSerNum);
-static MFRC522Status mfrc522Read(uint8_t blockAddr, uint8_t* pRecvData);
-static MFRC522Status mfrc522Write(uint8_t blockAddr, uint8_t* pWriteData);
+static MFRC522Status mfrc522Request(uint8_t byReqMode, uint8_t* pbyTagType);
+static MFRC522Status mfrc522ToCard(uint8_t byCommand, uint8_t* pbySendData, uint8_t bySendLen, uint8_t* pbyBackData, uint16_t* pwBackLen);
+static MFRC522Status mfrc522Anticoll(uint8_t* pbySerNum);
+static void mfrc522CalculateCRC(uint8_t* pbyIndata, uint8_t byLen, uint8_t* pbyOutData);
+static uint8_t mfrc522SelectTag(uint8_t* pbySerNum);
+static MFRC522Status mfrc522Auth(uint8_t byAuthMode, uint8_t byBlockAddr, uint8_t* pbySectorkey, uint8_t* pbySerNum);
+static MFRC522Status mfrc522Read(uint8_t byBlockAddr, uint8_t* pbyRecvData);
+static MFRC522Status mfrc522Write(uint8_t byBlockAddr, uint8_t* pbyWriteData);
 static void mfrc522Halt(void);
 
 /******************************************************************************/
@@ -146,57 +146,57 @@ static void mfrc522Halt(void);
 /**
  * @brief 
  * 
- * @param addr 
- * @param val 
+ * @param byAddr 
+ * @param byVal 
  */
-static void mfrc522WriteRegister(uint8_t addr, uint8_t val)
+static void mfrc522WriteRegister(uint8_t byAddr, uint8_t byVal)
 {
     MFRC522_CS_ENB;
     /* Send address */
-    spiSenData((addr << 1) & RESET_ADDRESS);
+    spiSenData((byAddr << 1) & RESET_ADDRESS);
     /* Send data */
-    spiSenData(val);
+    spiSenData(byVal);
     MFRC522_CS_DIS;
 }
 
 /**
  * @brief 
  * 
- * @param addr 
+ * @param byAddr 
  * @return uint8_t 
  */
-static uint8_t mfrc522ReadRegister(uint8_t addr)
+static uint8_t mfrc522ReadRegister(uint8_t byAddr)
 {
-    uint8_t val = 0;
+    uint8_t byVal = 0;
 
     MFRC522_CS_ENB;
     /* Send address */
-    val = spiSenData(((addr << 1) & RESET_ADDRESS) | SET_ADDRESS);
+    byVal = spiSenData(((byAddr << 1) & RESET_ADDRESS) | SET_ADDRESS);
     MFRC522_CS_DIS;
 
-    return val;
+    return byVal;
 }
 
 /**
  * @brief 
  * 
- * @param reg 
- * @param mask 
+ * @param byReg 
+ * @param byMask 
  */
-static void mfrc522SetBitMask(uint8_t reg, uint8_t mask)
+static void mfrc522SetBitMask(uint8_t byReg, uint8_t byMask)
 {
-    mfrc522WriteRegister(reg, TM_MFRC522_ReadRegister(reg) | mask);
+    mfrc522WriteRegister(byReg, mfrc522ReadRegister(byReg) | byMask);
 }
 
 /**
  * @brief 
  * 
- * @param reg 
- * @param mask 
+ * @param byReg 
+ * @param byMask 
  */
-static void mfrc522ClearBitMask(uint8_t reg, uint8_t mask)
+static void mfrc522ClearBitMask(uint8_t byReg, uint8_t byMask)
 {
-    mfrc522WriteRegister(reg, TM_MFRC522_ReadRegister(reg) & ~(mask));
+    mfrc522WriteRegister(byReg, mfrc522ReadRegister(byReg) & ~(byMask));
 }
 
 /**
@@ -214,12 +214,229 @@ static void mfrc522Reset(void)
  */
 static void mfrc522AntennaOn(void)
 {
-    uint8_t temp;
+    uint8_t byTemp;
 
-	temp = mfrc522ReadRegister(MFRC522_REG_TX_CONTROL);
-	if (!(temp & 0x03)) {
-		mfrc522SetBitMask(MFRC522_REG_TX_CONTROL, 0x03);
-	}
+    byTemp = mfrc522ReadRegister(MFRC522_REG_TX_CONTROL);
+    if ((byTemp & 0x03)) {
+        mfrc522SetBitMask(MFRC522_REG_TX_CONTROL, 0x03);
+    }
+}
+
+/**
+ * @brief 
+ * 
+ * @param byCommand 
+ * @param pbySendData 
+ * @param bySendLen 
+ * @param pbyBackData 
+ * @param pwBackLen 
+ * @return MFRC522Status 
+ */
+static MFRC522Status mfrc522ToCard(uint8_t byCommand, uint8_t* pbySendData, uint8_t bySendLen, uint8_t* pbyBackData, uint16_t* pwBackLen)
+{
+    MFRC522Status status = MI_ERR;
+    uint8_t byIrqEn = 0x00;
+    uint8_t byWaitIrq = 0x00;
+    uint8_t byLastBits;
+    uint8_t n;
+    uint16_t i;
+
+    switch (byCommand)
+    {
+        case PCD_AUTHENT:
+        {
+            byIrqEn = 0x12;
+            byWaitIrq = 0x10;
+            break;
+        }
+        case PCD_TRANSCEIVE:
+        {
+            byIrqEn = 0x77;
+            byWaitIrq = 0x30;
+            break;
+        }
+        default:
+            break;
+    }
+
+    mfrc522WriteRegister(MFRC522_REG_COMM_IE_N, byIrqEn | 0x80);
+    mfrc522ClearBitMask(MFRC522_REG_COMM_IRQ, 0x80);
+    mfrc522SetBitMask(MFRC522_REG_FIFO_LEVEL, 0x80);
+    mfrc522WriteRegister(MFRC522_REG_COMMAND, PCD_IDLE);
+    for (i = 0; i < bySendLen; i++)
+    {
+        mfrc522WriteRegister(MFRC522_REG_FIFO_DATA, pbySendData[i]);
+    }
+    mfrc522WriteRegister(MFRC522_REG_COMMAND, byCommand);
+    if (byCommand == PCD_TRANSCEIVE)
+    {
+        mfrc522SetBitMask(MFRC522_REG_BIT_FRAMING, 0x80);		//StartSend=1,transmission of data starts  
+    }
+
+    //Waiting to receive data to complete
+    i = 2000;	//i according to the clock frequency adjustment, the operator M1 card maximum waiting time 25ms???
+    do {
+        //CommIrqReg[7..0]
+        //Set1 TxIRq RxIRq IdleIRq HiAlerIRq LoAlertIRq ErrIRq TimerIRq
+        n = mfrc522ReadRegister(MFRC522_REG_COMM_IRQ);
+        i--;
+    } while ((i!=0) && !(n&0x01) && !(n&byWaitIrq));
+    mfrc522ClearBitMask(MFRC522_REG_BIT_FRAMING, 0x80);
+
+    if (i != 0)
+    {
+        if (!(mfrc522ReadRegister(MFRC522_REG_ERROR) & 0x1B))
+        {
+            status = MI_OK;
+            if (n & byIrqEn & 0x01)
+            {
+                status = MI_NOTAGERR;
+            }
+
+            if (byCommand == PCD_TRANSCEIVE)
+            {
+                n = mfrc522ReadRegister(MFRC522_REG_FIFO_LEVEL);
+                byLastBits = mfrc522ReadRegister(MFRC522_REG_CONTROL) & 0x07;
+                if (byLastBits)
+                {
+                    *pwBackLen = (n - 1) * 8 + byLastBits;
+                }
+                else
+                {
+                    *pwBackLen = n * 8;
+                }
+
+                if (n == 0)
+                {
+                    n = 1;
+                }
+                if (n > MFRC522_MAX_LEN)
+                {
+                    n = MFRC522_MAX_LEN;
+                }
+
+                //Reading the received data in FIFO
+                for (i = 0; i < n; i++)
+                {
+                    pbyBackData[i] = mfrc522ReadRegister(MFRC522_REG_FIFO_DATA);
+                }
+            }
+        }
+        else
+        {
+            status = MI_ERR;
+        }
+    }
+
+    return status;
+}
+
+/**
+ * @brief 
+ * 
+ * @param byReqMode 
+ * @param pbyTagType 
+ * @return MFRC522Status 
+ */
+static MFRC522Status mfrc522Request(uint8_t byReqMode, uint8_t* pbyTagType)
+{
+    MFRC522Status status;
+    uint16_t wBackBits;
+
+    mfrc522WriteRegister(MFRC522_REG_BIT_FRAMING, 0x07);
+    pbyTagType[0] = byReqMode;
+    status = mfrc522ToCard(PCD_TRANSCEIVE, pbyTagType, 1, pbyTagType, &wBackBits);
+
+    if ((status != MI_OK) || (wBackBits != 0x10))
+    {
+        status = MI_ERR;
+    }
+
+    return status;
+}
+
+/**
+ * @brief 
+ * 
+ * @param pbySerNum 
+ * @return MFRC522Status 
+ */
+static MFRC522Status mfrc522Anticoll(uint8_t* pbySerNum)
+{
+    MFRC522Status status;
+    uint8_t i = 0;
+    uint8_t bySerNumCheck = 0;
+    uint16_t wUnLen;
+
+    mfrc522WriteRegister(MFRC522_REG_BIT_FRAMING, 0x00);
+    pbySerNum[0] = PICC_ANTICOLL;
+    pbySerNum[1] = 0x20;
+    status = mfrc522ToCard(PCD_TRANSCEIVE, pbySerNum, 2, pbySerNum, &wUnLen);
+
+    if (status == MI_OK)
+    {
+        //Check card serial number
+        for (i = 0; i < 4; i++)
+        {
+            bySerNumCheck ^= pbySerNum[i];
+        }
+        if (bySerNumCheck != pbySerNum[i])
+        {
+            status = MI_ERR;
+        }
+    }
+    return status;
+}
+
+/**
+ * @brief 
+ * 
+ * @param pbyIndata 
+ * @param byLen 
+ * @param pbyOutData 
+ */
+static void mfrc522CalculateCRC(uint8_t* pbyIndata, uint8_t byLen, uint8_t* pbyOutData)
+{
+    uint8_t i, n;
+
+    mfrc522ClearBitMask(MFRC522_REG_DIV_IRQ, 0x04);             //CRCIrq = 0
+    mfrc522SetBitMask(MFRC522_REG_FIFO_LEVEL, 0x80);            //Clear the FIFO pointer
+    //Write_MFRC522(CommandReg, PCD_IDLE);
+
+    //Writing data to the FIFO	
+    for (i = 0; i < byLen; i++)
+    {
+        mfrc522WriteRegister(MFRC522_REG_FIFO_DATA, *(pbyIndata+i));
+    }
+    mfrc522WriteRegister(MFRC522_REG_COMMAND, PCD_CALCCRC);
+
+    //Wait CRC calculation is complete
+    i = 0xFF;
+    do
+    {
+        n = mfrc522ReadRegister(MFRC522_REG_DIV_IRQ);
+        i--;
+    } while ((i != 0) && !(n & 0x04));        //CRCIrq = 1
+
+    //Read CRC calculation result
+    pbyOutData[0] = mfrc522ReadRegister(MFRC522_REG_CRC_RESULT_L);
+    pbyOutData[1] = mfrc522ReadRegister(MFRC522_REG_CRC_RESULT_M);
+}
+
+/**
+ * @brief 
+ * 
+ */
+static void mfrc522Halt(void)
+{
+    uint16_t wUnLen;
+    uint8_t byBuff[4];
+
+    byBuff[0] = PICC_HALT;
+    byBuff[1] = 0;
+    mfrc522CalculateCRC(byBuff, 2, &byBuff[2]);
+
+    mfrc522ToCard(PCD_TRANSCEIVE, byBuff, 4, byBuff, &wUnLen);
 }
 
 /**
@@ -238,4 +455,23 @@ void mfrc522Init(void)
     mfrc522WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
     mfrc522WriteRegister(MFRC522_REG_MODE, 0x3D);
     mfrc522AntennaOn();
+}
+
+/**
+ * @brief Check for RFID card existance
+ * @param [uint8_t]: *pID
+ * @retval MI_OK if card is detected
+ */
+MFRC522Status mfrc522Check(uint8_t *pbyId)
+{
+    MFRC522Status status;
+
+    status = mfrc522Request(PICC_REQIDL, pbyId);
+    if (status == MI_OK)
+    {
+        status = mfrc522Anticoll(pbyId);
+    }
+    mfrc522Halt();
+
+    return status;
 }
