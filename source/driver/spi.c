@@ -26,8 +26,8 @@
 
 /******************************************************************************/
 /**
- * @brief  Initialize SPI
- * @retval None
+ * @brief Initialize SPI
+ * 
  */
 void spiInit(void)
 {
@@ -79,14 +79,13 @@ void spiInit(void)
  * @param  [uint8_t] : byData
  * @retval None
  */
-void spiSenData(uint8_t byData)
+uint8_t spiSenData(uint8_t byData)
 {
-    GPIO_ResetBits(GPIOB, GPIO_Pin_12);
-        
     SPI_I2S_SendData(SPI2, byData);
     while (SPI_I2S_GetFlagStatus(SPI2, SPI_I2S_FLAG_BSY) == SET)
     {
 
     }
-    GPIO_SetBits(GPIOB, GPIO_Pin_12);
+
+    return SPI_I2S_ReceiveData(SPI2);
 }

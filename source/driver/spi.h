@@ -23,17 +23,19 @@
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
+
 /**
- * @brief  Initialize SPI
- * @retval None
+ * @brief Initialize SPI
+ * 
  */
 void spiInit(void);
 
 /**
- * @brief  Send data
- * @param  [uint8_t] : byData
- * @retval None
+ * @brief Send data
+ * 
+ * @param byData 
+ * @return uint8_t 
  */
-void spiSenData(uint8_t byData);
+uint8_t spiSenData(uint8_t byData);
 /******************************************************************************/
 #endif /* DRIVER_SPI_H_ */
