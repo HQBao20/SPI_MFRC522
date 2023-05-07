@@ -135,7 +135,7 @@ static void mfrc522CalculateCRC(uint8_t* pIndata, uint8_t len, uint8_t* pOutData
 static uint8_t mfrc522SelectTag(uint8_t* pSerNum);
 static MFRC522Status mfrc522Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* pSectorkey, uint8_t* pSerNum);
 static MFRC522Status mfrc522Read(uint8_t blockAddr, uint8_t* pRecvData);
-static TM_MFRC522_Status_tmfrc522Write(uint8_t blockAddr, uint8_t* pWriteData);
+static MFRC522Status mfrc522Write(uint8_t blockAddr, uint8_t* pWriteData);
 static void mfrc522Halt(void);
 
 /******************************************************************************/
@@ -180,10 +180,46 @@ static uint8_t mfrc522ReadRegister(uint8_t addr)
 /**
  * @brief 
  * 
+ * @param reg 
+ * @param mask 
+ */
+static void mfrc522SetBitMask(uint8_t reg, uint8_t mask)
+{
+    mfrc522WriteRegister(reg, mfrc522ReadRegister(reg) | mask);
+}
+
+/**
+ * @brief 
+ * 
+ * @param reg 
+ * @param mask 
+ */
+static void mfrc522ClearBitMask(uint8_t reg, uint8_t mask)
+{
+    mfrc522WriteRegister(reg, mfrc522ReadRegister(reg) & ~(mask));
+}
+
+/**
+ * @brief 
+ * 
  */
 static void mfrc522Reset(void)
 {
     mfrc522WriteRegister(MFRC522_REG_COMMAND, PCD_RESETPHASE);
+}
+
+/**
+ * @brief 
+ * 
+ */
+static void mfrc522AntennaOn(void)
+{
+    uint8_t temp;
+
+	temp = mfrc522ReadRegister(MFRC522_REG_TX_CONTROL);
+	if (!(temp & 0x03)) {
+		mfrc522SetBitMask(MFRC522_REG_TX_CONTROL, 0x03);
+	}
 }
 
 /**
@@ -201,4 +237,5 @@ void mfrc522Init(void)
     mfrc522WriteRegister(MFRC522_REG_RF_CFG, 0x70);
     mfrc522WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
     mfrc522WriteRegister(MFRC522_REG_MODE, 0x3D);
+    mfrc522AntennaOn();
 }
