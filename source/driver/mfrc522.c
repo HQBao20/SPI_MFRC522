@@ -185,7 +185,7 @@ static uint8_t mfrc522ReadRegister(uint8_t addr)
  */
 static void mfrc522SetBitMask(uint8_t reg, uint8_t mask)
 {
-    mfrc522WriteRegister(reg, mfrc522ReadRegister(reg) | mask);
+    mfrc522WriteRegister(reg, TM_MFRC522_ReadRegister(reg) | mask);
 }
 
 /**
@@ -196,7 +196,7 @@ static void mfrc522SetBitMask(uint8_t reg, uint8_t mask)
  */
 static void mfrc522ClearBitMask(uint8_t reg, uint8_t mask)
 {
-    mfrc522WriteRegister(reg, mfrc522ReadRegister(reg) & ~(mask));
+    mfrc522WriteRegister(reg, TM_MFRC522_ReadRegister(reg) & ~(mask));
 }
 
 /**
